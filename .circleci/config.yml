@@ -1,0 +1,14 @@
+version: 2.1
+jobs:
+  test:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - run:
+          command: echo "hello world"
+          name: echo hello world
+workflows:
+  initial:
+    jobs:
+      - test
