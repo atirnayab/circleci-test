@@ -1,14 +1,91 @@
 version: 2.1
+
+setup: << pipeline.parameters.run-setup >>
+
+orbs:
+  path-filtering: circleci/path-filtering@1.0.0
+
+parameters:
+  run-setup:
+    type: boolean
+    default: true
+  run-module-a:
+    type: boolean
+    default: false
+  run-module-b:
+    type: boolean
+    default: false
+  run-module-c:
+    type: boolean
+    default: false
+
 jobs:
-  test:
+  module-a:
     machine:
       image: ubuntu-2004:202010-01
     steps:
       - checkout
       - run:
-          command: echo "hello world"
-          name: echo hello world
+          command: echo "from module a"
+          name: echo module a
+
+  module-b:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - run:
+          command: echo "from module b"
+          name: echo module b
+
+  module-b-post:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - run:
+          command: echo "continuing module b"
+          name: echo module b post
+
+  module-c:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - run:
+          command: echo "from module c"
+          name: echo module c
+
 workflows:
-  initial:
+  pre:
+    when: << pipeline.parameters.run-setup >>
     jobs:
-      - test
+      - path-filtering/filter:
+          # compare files on main
+          base-revision: main
+          # config for continuation; herein we reuse this config itself
+          config-path: .circleci/config.yml
+          # 3-column space-separated table for mapping; `path-to-test parameter-to-set valur-for-paramter` for each row
+          mapping: |
+            *. run-setup false
+            module-a/.* run-module-a true
+            module-b/.* run-module-b true
+            module-c/.* run-module-c true
+
+  module-a:
+    when: << pipeline.parameters.run-module-a >>
+    jobs:
+      - module-a
+
+  module-b:
+    when: << pipeline.paramaters.run-module-b >>
+    jobs:
+      - module-b
+      - module-b-post:
+          requires:
+            - module-b
+
+  module-c:
+    when: << pipeline.parameters.run-module-c >>
+    jobs:
+      - module-c
