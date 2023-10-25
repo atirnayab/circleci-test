@@ -78,7 +78,7 @@ workflows:
       - module-a
 
   module-b:
-    when: << pipeline.paramaters.run-module-b >>
+    when: << pipeline.parameters.run-module-b >>
     jobs:
       - module-b
       - module-b-post:
