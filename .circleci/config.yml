@@ -23,21 +23,24 @@ jobs:
     steps:
       - checkout
       - run: "echo 'Hello from module A!'"
-      - run: cat module-a/README.md
 
   module-b:
     machine: true
     steps:
       - checkout
       - run: "echo 'Hello from module B!'"
-      - run: cat module-b/README.md
 
   module-b-post:
     docker:
       - image: alpine
     steps:
       - run: "echo 'Continuing module B'"
-      - run: env
+
+  module-c:
+    machine: true
+    steps:
+      - checkout
+      - run: "echo 'Hello from module C!'"
 
 workflows:
   pre:
@@ -53,6 +56,7 @@ workflows:
             .* run-setup false
             module-a/.* run-module-a true
             module-b/.* run-module-b true
+            module-c/.* run-module-c true
   module-a:
     when: << pipeline.parameters.run-module-a >>
     jobs:
@@ -64,3 +68,7 @@ workflows:
       - module-b-post:
           requires:
             - module-b
+  module-c:
+    when: << pipeline.parameters.run-module-c >>
+    jobs:
+      - module-c
