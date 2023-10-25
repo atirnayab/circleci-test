@@ -22,7 +22,7 @@ parameters:
 jobs:
   module-a:
     machine:
-      image: ubuntu-2004:202010-01
+      image: alpine
     steps:
       - checkout
       - run:
@@ -31,7 +31,7 @@ jobs:
 
   module-b:
     machine:
-      image: ubuntu-2004:202010-01
+      image: alpine
     steps:
       - checkout
       - run:
@@ -40,7 +40,7 @@ jobs:
 
   module-b-post:
     machine:
-      image: ubuntu-2004:202010-01
+      image: alpine
     steps:
       - checkout
       - run:
@@ -49,7 +49,7 @@ jobs:
 
   module-c:
     machine:
-      image: ubuntu-2004:202010-01
+      image: alpine
     steps:
       - checkout
       - run:
