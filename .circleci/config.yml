@@ -4,6 +4,7 @@ setup: << pipeline.parameters.run-setup >>
 
 orbs:
   path-filtering: circleci/path-filtering@1.0.0
+  slack: circleci/slack@4.12.5
 
 parameters:
   run-setup:
@@ -18,29 +19,96 @@ parameters:
   run-module-c:
     type: boolean
     default: false
+  channel_name:
+    type: string
+    default: C06873RGJLT
+
+executors:
+  base_executor:
+    machine:
+      image: ubuntu-2204:2023.07.2
+
+commands:
+  slack_notify:
+    parameters:
+      message:
+        type: string
+        description: "custom message"
+      url:
+        type: string
+        description: "image url"
+      event:
+        type: enum
+        enum: [fail, pass, always]
+        description: "event type"
+    steps:
+      - run:
+          name: "fetch gif"
+          command: |
+            #!/bin/bash
+
+            # Set the URL you want to fetch data from
+            url="https://tenor.googleapis.com/v2/search?q=developer%20%20funny%20meme&key=${TENOR_API_KEY}&limit=1&random=true"
+
+            # Use curl to fetch data and assign it to a variable
+            data=$(curl -sL "$url")
+
+            gif=$(echo "$data" | jq -r '.results[0].media_formats.gif.url')
+            description=$(echo "$data" | jq -r '.results[0].content_description')
+
+            mkdir -p /tmp/workspace
+
+            echo $gif
+            echo $description
+
+            echo "export GIF_URL=\"$gif\"" >> /tmp/workspace/env_vars
+            echo "export DESCRIPTION=\"$description\"" >> /tmp/workspace/env_vars
+      - slack/notify:
+          channel: << pipeline.parameters.channel_name >>
+          event: <<parameters.event>>
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<< parameters.message >>"
+                  }
+                },
+                {
+                  "type": "image",
+                  "title": {
+                    "type": "plain_text",
+                    "text": "meme",
+                    "emoji": true
+                  },
+                  "image_url": "${GIF_URL}",
+                  "alt_text": "${DESCRIPTION}"
+                }
+              ]
+            }
 
 jobs:
   module-a:
-    docker:
-      - image: alpine
+    executor: base_executor
     steps:
       - checkout
       - run: "echo 'Hello from module A!'"
 
   module-b:
-    machine: true
+    executor: base_executor
     steps:
       - checkout
       - run: "echo 'Hello from module B!'"
 
   module-b-post:
-    docker:
-      - image: alpine
+    executor: base_executor
     steps:
       - run: "echo 'Continuing module B'"
 
   module-c:
-    machine: true
+    executor: base_executor
     steps:
       - checkout
       - run: "echo 'Hello from module C!'"
