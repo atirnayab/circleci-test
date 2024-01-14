@@ -71,20 +71,28 @@ commands:
                   }
                 },
                 {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "Goto Workflow",
-                        "emoji": true
-                      },
-                      "value": "",
-                      "url": "${CIRCLE_BUILD_URL}",
-                      "action_id": "actionId-0"
-                    }
-                  ]
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Goto Circle CI Workflow"
+                  },
+                  "accessory": {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "Click Me",
+                      "emoji": true
+                    },
+                    "value": "click_me_123",
+                    "url": "${CIRCLE_BUILD_URL}",
+                    "action_id": "button-action"
+                  }
+                },
+                {
+                  "type": "divider"
                 },
                 {
                   "type": "image",
