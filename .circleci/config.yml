@@ -71,6 +71,22 @@ commands:
                   }
                 },
                 {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Goto Workflow",
+                        "emoji": true
+                      },
+                      "value": "",
+                      "url": "${CIRCLE_BUILD_URL}",
+                      "action_id": "actionId-0"
+                    }
+                  ]
+                },
+                {
                   "type": "image",
                   "title": {
                     "type": "plain_text",
