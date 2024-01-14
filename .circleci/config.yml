@@ -45,7 +45,7 @@ commands:
             #!/bin/bash
 
             # Set the URL you want to fetch data from
-            url="https://tenor.googleapis.com/v2/search?q=developer%20%20funny%20meme&key=${TENOR_API_KEY}&limit=1&random=true"
+            url="https://tenor.googleapis.com/v2/search?q=developer%20%20meme&key=${TENOR_API_KEY}&limit=1&random=true"
 
             # Use curl to fetch data and assign it to a variable
             data=$(curl -sL "$url")
@@ -55,11 +55,8 @@ commands:
 
             mkdir -p /tmp/workspace
 
-            echo $gif
-            echo $description
-
-            echo "export GIF_URL=\"$gif\"" >> /tmp/workspace/env_vars
-            echo "export DESCRIPTION=\"$description\"" >> /tmp/workspace/env_vars
+            echo "export GIF_URL='$gif'" >> $BASH_ENV
+            echo "export DESCRIPTION='$description'" >> $BASH_ENV
       - slack/notify:
           channel: << pipeline.parameters.channel_name >>
           event: <<parameters.event>>
