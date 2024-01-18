@@ -1,0 +1,156 @@
+version: 2.1
+
+orbs:
+  slack: circleci/slack@4.12.5
+
+parameters:
+  run-module-a:
+    type: boolean
+    default: false
+  run-module-b:
+    type: boolean
+    default: false
+  run-module-c:
+    type: boolean
+    default: false
+  channel_name:
+    type: string
+    default: C06873RGJLT
+
+executors:
+  base_executor:
+    machine:
+      image: default
+
+commands:
+  slack_notify:
+    parameters:
+      message:
+        type: string
+        description: "custom message"
+      event:
+        type: enum
+        enum: [fail, pass, always]
+        description: "event type"
+    steps:
+      - run:
+          name: "fetch gif"
+          command: |
+            #!/bin/bash
+
+            # Set the URL you want to fetch data from
+            url="https://tenor.googleapis.com/v2/search?q=coding%20%20meme&key=${TENOR_API_KEY}&limit=1&random=true"
+
+            # Use curl to fetch data and assign it to a variable
+            data=$(curl -sL "$url")
+
+            gif=$(echo "$data" | jq -r '.results[0].media_formats.gif.url')
+            description=$(echo "$data" | jq -r '.results[0].content_description')
+
+            mkdir -p /tmp/workspace
+
+            echo "export GIF_URL='$gif'" >> $BASH_ENV
+            echo "export DESCRIPTION='$description'" >> $BASH_ENV
+      - slack/notify:
+          channel: << pipeline.parameters.channel_name >>
+          event: <<parameters.event>>
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<< parameters.message >>"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Goto Circle CI Workflow"
+                  },
+                  "accessory": {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "Click Me",
+                      "emoji": true
+                    },
+                    "value": "click_me_123",
+                    "url": "${CIRCLE_BUILD_URL}",
+                    "action_id": "button-action"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "image",
+                  "title": {
+                    "type": "plain_text",
+                    "text": "meme",
+                    "emoji": true
+                  },
+                  "image_url": "${GIF_URL}",
+                  "alt_text": "${DESCRIPTION}"
+                }
+              ]
+            }
+
+jobs:
+  module-a:
+    executor: base_executor
+    steps:
+      - checkout
+      - run: "echo 'Hello from module A!'"
+      - slack_notify:
+          event: pass
+          message: "yes"
+
+  module-b:
+    executor: base_executor
+    steps:
+      - checkout
+      - run: "echo 'Hello from module B!'"
+
+  module-b-post:
+    executor: base_executor
+    steps:
+      - run: "echo 'Continuing module B'"
+      - slack_notify:
+          event: pass
+          message: "yes"
+
+  module-c:
+    executor: base_executor
+    steps:
+      - checkout
+      - run: "echo 'Hello from module C!'"
+      - slack_notify:
+          event: pass
+          message: "yes"
+
+workflows:
+  module-a:
+    when: << pipeline.parameters.run-module-a >>
+    jobs:
+      - module-a:
+          context: Default
+  module-b:
+    when: << pipeline.parameters.run-module-b >>
+    jobs:
+      - module-b:
+          context: Default
+      - module-b-post:
+          context: Default
+          requires:
+            - module-b
+  module-c:
+    when: << pipeline.parameters.run-module-c >>
+    jobs:
+      - module-c:
+          context: Default
