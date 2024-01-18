@@ -16,6 +16,9 @@ parameters:
   channel_name:
     type: string
     default: C06873RGJLT
+  branch:
+    type: string
+    default: main
 
 executors:
   base_executor:
@@ -109,7 +112,7 @@ jobs:
       - run: "echo 'Hello from module A!'"
       - slack_notify:
           event: pass
-          message: "yes"
+          message: "yes << pipeline.parameters.branch >>"
 
   module-b:
     executor: base_executor
