@@ -9,6 +9,9 @@ workflows:
   setup:
     jobs:
       - path-filtering/filter:
+          filters:
+            branches:
+              only: dev
           # Compare files on main
           base-revision: dev
           # Config for continuation; herein we reuse this config itself
